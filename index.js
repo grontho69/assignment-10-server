@@ -27,6 +27,23 @@ const client = new MongoClient(uri, {
   }
 });
 
+const verifyToken = async (req, res, next) => {
+  const authorization = req.headers.authorization
+  if (!authorization) {
+    return res.status(401).send({error:'Unauthorized access'})
+  }
+
+  const token = authorization.split(' ')[1];
+ try {
+   await admin.auth().verifyIdToken(token) 
+     next()
+ } catch (error) {
+  res.status(401).send({error:'Unauthorized access'})
+ }
+
+
+
+}
 
 
 async function run() {
@@ -63,7 +80,12 @@ const db = client.db('assignment-10')
        })
     })
   
-
+   app.get('/my-issues',verifyToken, async (req, res) => {
+      const email = req.query.email
+      const result = await issuesCollection.find({ email: email }).toArray()
+      res.send(result)
+      
+})
 
    
 
