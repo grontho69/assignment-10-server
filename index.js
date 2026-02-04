@@ -110,7 +110,19 @@ const db = client.db('assignment-10')
       .toArray();
 
     res.send(result);
-  });
+ });
+    
+    app.post('/contributions', async (req, res) => {
+  const data = {
+    ...req.body,
+    amount: Number(req.body.amount),
+    createdAt: new Date()
+  };
+
+  const result = await contributionsCollection.insertOne(data);
+  res.send({ _id: result.insertedId, ...data });
+});
+
  
 
 
