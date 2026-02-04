@@ -34,10 +34,14 @@ async function run() {
    
     await client.connect();
 
+const db = client.db('assignment-10')
+    const issuesCollection = db.collection('issues')
 
 
-
-   
+     app.get('/issues', async (req, res) => {
+     const result = await issuesCollection.find().toArray()
+     res.send(result)
+    })
 
   
 
