@@ -54,6 +54,12 @@ async function run() {
 const db = client.db('assignment-10')
     const issuesCollection = db.collection('issues')
 
+    const contributionsCollection = db.collection('contributions');
+    
+
+
+    //get issues
+
 
      app.get('/issues', async (req, res) => {
      const result = await issuesCollection.find().toArray()
@@ -87,8 +93,24 @@ const db = client.db('assignment-10')
       
 })
 
+      //recent issue
+    
+    app.get('/recent-issues', async (req, res) => {
+      const result = await issuesCollection.find().sort({date :-1}).limit(6).toArray()
+      res.send(result)
+    })
    
+ app.get('/contributions', async (req, res) => {
+    const { issueId } = req.query;
+    if (!issueId) return res.send([]);
 
+    const result = await contributionsCollection
+      .find({ issueId })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.send(result);
+  });
  
 
 
