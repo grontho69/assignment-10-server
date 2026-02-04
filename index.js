@@ -43,9 +43,25 @@ const db = client.db('assignment-10')
      res.send(result)
     })
 
-  
+    app.get('/issues/:id',verifyToken ,async (req, res) => {
+      const{ id }= req.params
+   
+      const result = await issuesCollection.findOne({_id:new ObjectId(id)})
+      res.send({
+        success: true,
+        result
+      })
+})
 
- 
+  app.post('/issues', async (req, res) => {
+      const data = req.body
+      console.log(data)
+      const result = await issuesCollection.insertOne(data)
+      res.send({
+        success: true,
+        result
+       })
+    })
   
 
 
