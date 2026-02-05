@@ -1,6 +1,8 @@
 const express = require('express')
 const cors = require('cors')
-
+const admin = require("firebase-admin");
+require('dotenv').config()
+const serviceAccount = require("./serviceKey.json");
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = 3000
@@ -16,7 +18,7 @@ admin.initializeApp({
 
 
 
-const uri = "mongodb+srv://assignment-10:RcEa1TXP7h9TJrA5@cluster0.pxios99.mongodb.net/?appName=Cluster0";
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.pxios99.mongodb.net/?appName=Cluster0`;
 
 
 const client = new MongoClient(uri, {
@@ -91,7 +93,40 @@ const db = client.db('assignment-10')
       const result = await issuesCollection.find({ email: email }).toArray()
       res.send(result)
       
-})
+   })
+    
+    
+    // update an Issue
+    app.put('/issues/:id', verifyToken, async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      const filter = { _id: new ObjectId(id) };
+      
+      const updatedDoc = {
+        $set: {
+          title: data.title,
+          category: data.category,
+          description: data.description,
+          amount: data.amount,
+          status: data.status, 
+        }
+      };
+
+      const result = await issuesCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+    
+    
+    
+    
+    app.delete('/issues/:id',verifyToken,  async (req, res) => {
+      const { id } = req.params;
+      const result = await issuesCollection.deleteOne({ _id: new ObjectId(id) });
+      res.send({
+        success: true,
+        result
+      });
+    });
 
       //recent issue
     
@@ -123,7 +158,40 @@ const db = client.db('assignment-10')
   res.send({ _id: result.insertedId, ...data });
 });
 
- 
+ app.get('/my-contributions', verifyToken, async (req, res) => {
+            const email = req.query.email;
+            if (!email) return res.status(400).send({ error: "Email required" });
+
+            
+            const result = await contributionsCollection.aggregate([
+                { $match: { contributorEmail: email } }, 
+                {
+                    $addFields: {
+                        issueObjectId: { $toObjectId: "$issueId" } 
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "issues",              
+                        localField: "issueObjectId", 
+                        foreignField: "_id",         
+                        as: "issueDetails"           
+                    }
+                },
+                { $unwind: "$issueDetails" },        
+                {
+                    $project: {                      
+                        _id: 1,
+                        amount: 1,
+                        date: "$createdAt",
+                        issueTitle: "$issueDetails.title",
+                        category: "$issueDetails.category"
+                    }
+                }
+            ]).toArray();
+
+            res.send(result);
+        });
 
 
     
