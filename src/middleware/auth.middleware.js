@@ -11,15 +11,12 @@ const verifyFirebaseToken = async (req, res, next) => {
 
     try {
         const decodedToken = await admin.auth().verifyIdToken(token);
-        
-        // Sync/Verify user in MongoDB
         const user = await userService.upsertUser({
             email: decodedToken.email,
             name: decodedToken.name,
             photoURL: decodedToken.picture
         });
 
-        // Attach MongoDB user object to request
         req.user = user;
         next();
     } catch (error) {

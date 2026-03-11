@@ -37,8 +37,6 @@ const updateIssue = async (id, data) => {
         }
     };
     const result = await getIssuesCollection().updateOne(filter, updatedDoc);
-    
-    // Trigger notifications for status changes
     if (data.status === 'Approved') {
         sendNotification('REPORT_APPROVED', {
             message: `Report approved: ${data.title}`,
@@ -66,7 +64,6 @@ const approveIssue = async (id) => {
     const filter = { _id: new ObjectId(id) };
     const issue = await getIssueById(id);
     const result = await getIssuesCollection().updateOne(filter, { $set: { status: 'Approved' } });
-    
     sendNotification('REPORT_APPROVED', {
         message: `Report approved: ${issue.title}`,
         payload: { id, title: issue.title }

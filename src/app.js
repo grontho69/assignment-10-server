@@ -10,17 +10,15 @@ const userRoutes = require('./routes/user.routes');
 
 const app = express();
 
-// Security Middleware
-app.use(helmet()); // Sets various HTTP headers for security
+app.use(helmet());
 
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // Limit each IP to 500 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 500,
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use(limiter);
 
-// Middleware
 const allowedOrigins = [
     'http://localhost:5173',
     'https://eco-report-mmg.netlify.app',
@@ -41,7 +39,6 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
 app.use('/issues', issueRoutes);
 app.use('/contributions', contributionRoutes);
 app.use('/export', exportRoutes);

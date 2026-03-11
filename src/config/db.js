@@ -1,15 +1,7 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const admin = require("firebase-admin");
-const serviceAccount = require("../../serviceKey.json");
 require('dotenv').config();
 
-// Firebase Admin initialization
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-// MongoDB client setup
-const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.pxios99.mongodb.net/?appName=Cluster0`;
+const uri = process.env.MONGODB_URI || `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.pxios99.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -21,13 +13,14 @@ const client = new MongoClient(uri, {
 
 const connectDB = async () => {
     try {
-        // await client.connect();
-        console.log("Connected to MongoDB");
+        await client.connect();
+        console.log("Database connection established");
+        await client.db("admin").command({ ping: 1 });
         return client.db('assignment-10');
     } catch (error) {
         console.error("MongoDB connection error:", error);
-        process.exit(1);
+        throw error;
     }
 };
 
-module.exports = { connectDB, client, admin };
+module.exports = { connectDB, client };

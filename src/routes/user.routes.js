@@ -5,10 +5,8 @@ const { verifyFirebaseToken, verifyAdmin } = require('../middleware/auth.middlew
 
 router.use(verifyFirebaseToken);
 
-// This is accessible to any authenticated user
 router.get('/profile', userController.getProfile);
 
-// The following routes are admin-only
 router.get('/', verifyAdmin, userController.getAllUsers);
 router.patch('/:id/role', verifyAdmin, userController.updateUserRole);
 router.delete('/:id', verifyAdmin, userController.deleteUser);

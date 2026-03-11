@@ -10,10 +10,7 @@ const getUserByEmail = async (email) => {
 const upsertUser = async (userData) => {
     const { email, name, photoURL, organization } = userData;
     const filter = { email };
-    
-    // Check if user exists to prevent role override if already set
     const existingUser = await getUserByEmail(email);
-    
     const updateDoc = {
         $set: {
             name: name || existingUser?.name,
@@ -23,11 +20,10 @@ const upsertUser = async (userData) => {
         },
         $setOnInsert: {
             email,
-            role: 'user', // Default role
+            role: 'user',
             createdAt: new Date()
         }
     };
-    
     const options = { upsert: true, returnDocument: 'after' };
     const result = await getUsersCollection().findOneAndUpdate(filter, updateDoc, options);
     return result;

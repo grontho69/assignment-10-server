@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const exportController = require('../controllers/export.controller');
-const { verifyJWT } = require('../middleware/auth.middleware');
+const { verifyFirebaseToken } = require('../middleware/auth.middleware');
 
-router.get('/csv', verifyJWT, exportController.exportCSV);
+router.get('/csv', verifyFirebaseToken, exportController.exportCSV);
 
 module.exports = router;

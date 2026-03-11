@@ -33,7 +33,6 @@ const deleteUser = async (req, res) => {
 
 const getProfile = async (req, res) => {
     try {
-        // req.user is attached by verifyFirebaseToken middleware
         res.status(200).json(req.user);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

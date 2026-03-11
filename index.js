@@ -15,12 +15,10 @@ const io = new Server(server, {
     transports: ['websocket', 'polling']
 });
 
-// Make io accessible globally
 global.io = io;
 
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
-    
     socket.on('disconnect', () => {
         console.log('User disconnected');
     });
