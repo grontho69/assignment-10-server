@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user.controller');
-const { verifyJWT, verifyAdmin } = require('../middleware/auth.middleware');
+const { verifyFirebaseToken, verifyAdmin } = require('../middleware/auth.middleware');
 
-router.get('/', verifyJWT, verifyAdmin, userController.getAllUsers);
-router.patch('/role', verifyJWT, verifyAdmin, userController.updateUserRole);
+router.use(verifyFirebaseToken);
+
+// This is accessible to any authenticated user
+router.get('/profile', userController.getProfile);
+
+// The following routes are admin-only
+router.get('/', verifyAdmin, userController.getAllUsers);
+router.patch('/:id/role', verifyAdmin, userController.updateUserRole);
+router.delete('/:id', verifyAdmin, userController.deleteUser);
 
 module.exports = router;

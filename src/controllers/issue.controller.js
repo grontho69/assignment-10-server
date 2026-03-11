@@ -63,6 +63,15 @@ const getRecentIssues = async (req, res) => {
     }
 };
 
+const approveIssue = async (req, res) => {
+    try {
+        const result = await issueService.approveIssue(req.params.id);
+        res.status(200).json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     getAllIssues,
     getIssueById,
@@ -70,5 +79,6 @@ module.exports = {
     getMyIssues,
     updateIssue,
     deleteIssue,
-    getRecentIssues
+    getRecentIssues,
+    approveIssue
 };

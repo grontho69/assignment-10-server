@@ -3,7 +3,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
-const authRoutes = require('./routes/auth.routes');
 const issueRoutes = require('./routes/issue.routes');
 const contributionRoutes = require('./routes/contribution.routes');
 const exportRoutes = require('./routes/export.routes');
@@ -43,7 +42,6 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
-app.use('/auth', authRoutes);
 app.use('/issues', issueRoutes);
 app.use('/contributions', contributionRoutes);
 app.use('/export', exportRoutes);

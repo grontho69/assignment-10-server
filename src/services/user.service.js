@@ -1,4 +1,5 @@
 const { client } = require('../config/db');
+const { ObjectId } = require('mongodb');
 
 const getUsersCollection = () => client.db('assignment-10').collection('users');
 
@@ -7,39 +8,58 @@ const getUserByEmail = async (email) => {
 };
 
 const upsertUser = async (userData) => {
-    const { email, name, photoURL, role } = userData;
+    const { email, name, photoURL, organization } = userData;
     const filter = { email };
+    
+    // Check if user exists to prevent role override if already set
+    const existingUser = await getUserByEmail(email);
+    
     const updateDoc = {
         $set: {
-            name,
-            photoURL,
+            name: name || existingUser?.name,
+            photoURL: photoURL || existingUser?.photoURL,
+            organization: organization || existingUser?.organization || '',
             lastLogin: new Date()
         },
         $setOnInsert: {
             email,
-            role: role || 'Public',
+            role: 'user', // Default role
             createdAt: new Date()
         }
     };
+    
     const options = { upsert: true, returnDocument: 'after' };
     const result = await getUsersCollection().findOneAndUpdate(filter, updateDoc, options);
     return result;
 };
 
-const getAllUsers = async () => {
-    return await getUsersCollection().find().toArray();
+const getAllUsers = async (search = '') => {
+    const query = search 
+        ? { 
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ] 
+          } 
+        : {};
+    return await getUsersCollection().find(query).toArray();
 };
 
-const updateUserRole = async (email, role) => {
+const updateUserRole = async (userId, role) => {
     return await getUsersCollection().updateOne(
-        { email },
+        { _id: new ObjectId(userId) },
         { $set: { role } }
     );
+};
+
+const deleteUser = async (userId) => {
+    return await getUsersCollection().deleteOne({ _id: new ObjectId(userId) });
 };
 
 module.exports = {
     getUserByEmail,
     upsertUser,
     getAllUsers,
-    updateUserRole
+    updateUserRole,
+    deleteUser
 };

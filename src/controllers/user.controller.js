@@ -2,7 +2,8 @@ const userService = require('../services/user.service');
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await userService.getAllUsers();
+        const { search } = req.query;
+        const users = await userService.getAllUsers(search);
         res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -11,9 +12,29 @@ const getAllUsers = async (req, res) => {
 
 const updateUserRole = async (req, res) => {
     try {
-        const { email, role } = req.body;
-        const result = await userService.updateUserRole(email, role);
+        const { id } = req.params;
+        const { role } = req.body;
+        const result = await userService.updateUserRole(id, role);
         res.status(200).json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await userService.deleteUser(id);
+        res.status(200).json({ success: true, message: 'User deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getProfile = async (req, res) => {
+    try {
+        // req.user is attached by verifyFirebaseToken middleware
+        res.status(200).json(req.user);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -21,5 +42,7 @@ const updateUserRole = async (req, res) => {
 
 module.exports = {
     getAllUsers,
-    updateUserRole
+    updateUserRole,
+    deleteUser,
+    getProfile
 };

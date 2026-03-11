@@ -1,40 +1,50 @@
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const admin = require('../config/firebase-admin');
+const userService = require('../services/user.service');
 
-const verifyJWT = (req, res, next) => {
-    const token = req.cookies?.token;
-    
-    if (!token) {
-        return res.status(401).send({ message: 'Unauthorized access: No token provided' });
+const verifyFirebaseToken = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).send({ message: 'Unauthorized access: Invalid token' });
-        }
-        req.user = decoded;
+    const token = authHeader.split('Bearer ')[1];
+
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        
+        // Sync/Verify user in MongoDB
+        const user = await userService.upsertUser({
+            email: decodedToken.email,
+            name: decodedToken.name,
+            photoURL: decodedToken.picture
+        });
+
+        // Attach MongoDB user object to request
+        req.user = user;
         next();
-    });
+    } catch (error) {
+        console.error('Error verifying token:', error);
+        return res.status(403).json({ message: 'Forbidden: Invalid token' });
+    }
 };
 
-const verifyRole = (roles) => {
+const verifyRole = (allowedRoles) => {
     return (req, res, next) => {
-        const userRole = req.user?.role;
-        if (!roles.includes(userRole)) {
-            return res.status(403).send({ message: 'Forbidden access: Insufficient permissions' });
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({ message: 'Forbidden: Insufficient permissions' });
         }
         next();
     };
 };
 
-const verifyAdmin = verifyRole(['Admin']);
-const verifyOrganization = verifyRole(['Admin', 'Organization']);
-const verifyResearcher = verifyRole(['Admin', 'Researcher']);
+const verifyAdmin = verifyRole(['admin']);
+const verifyOrganization = verifyRole(['admin', 'organization']);
+const verifyResearcher = verifyRole(['admin', 'researcher']);
 
-module.exports = { 
-    verifyJWT, 
-    verifyAdmin, 
-    verifyOrganization, 
+module.exports = {
+    verifyFirebaseToken,
+    verifyAdmin,
+    verifyOrganization,
     verifyResearcher,
-    verifyRole 
+    verifyRole
 };

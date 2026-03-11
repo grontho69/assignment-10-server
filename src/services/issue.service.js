@@ -62,6 +62,18 @@ const getRecentIssues = async (limit = 6) => {
     return await getIssuesCollection().find().sort({ date: -1 }).limit(limit).toArray();
 };
 
+const approveIssue = async (id) => {
+    const filter = { _id: new ObjectId(id) };
+    const issue = await getIssueById(id);
+    const result = await getIssuesCollection().updateOne(filter, { $set: { status: 'Approved' } });
+    
+    sendNotification('REPORT_APPROVED', {
+        message: `Report approved: ${issue.title}`,
+        payload: { id, title: issue.title }
+    });
+    return result;
+};
+
 module.exports = {
     getAllIssues,
     getIssueById,
@@ -69,5 +81,6 @@ module.exports = {
     getMyIssues,
     updateIssue,
     deleteIssue,
-    getRecentIssues
+    getRecentIssues,
+    approveIssue
 };

@@ -11,7 +11,8 @@ const io = new Server(server, {
     cors: {
         origin: ['http://localhost:5173', 'https://eco-report-mmg.netlify.app', 'https://eco-report-client.vercel.app'],
         credentials: true
-    }
+    },
+    transports: ['websocket', 'polling']
 });
 
 // Make io accessible globally
