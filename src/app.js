@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth.routes');
 const issueRoutes = require('./routes/issue.routes');
 const contributionRoutes = require('./routes/contribution.routes');
 const exportRoutes = require('./routes/export.routes');
+const userRoutes = require('./routes/user.routes');
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/auth', authRoutes);
 app.use('/issues', issueRoutes);
 app.use('/contributions', contributionRoutes);
 app.use('/export', exportRoutes);
+app.use('/users', userRoutes);
 
 app.get('/', (req, res) => {
   res.send('EcoReport API is running...');

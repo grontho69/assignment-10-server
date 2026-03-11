@@ -1,11 +1,15 @@
 const jwt = require('jsonwebtoken');
+const userService = require('../services/user.service');
 require('dotenv').config();
 
 const login = async (req, res) => {
     try {
-        const user = req.body;
-        // In a real app, you'd verify user credentials here
-        // For now, we assume the client provides the user info and role after Firebase auth
+        const userData = req.body;
+        
+        // Upsert user in MongoDB and get the full user record (including role)
+        const user = await userService.upsertUser(userData);
+        
+        // Use the MongoDB record to sign the token (so it has the correct role)
         const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.cookie('token', token, {
@@ -13,7 +17,7 @@ const login = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 3600000 // 1 hour
-        }).send({ success: true });
+        }).send({ success: true, user });
 
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
