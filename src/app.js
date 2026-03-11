@@ -24,17 +24,17 @@ app.use(limiter);
 const allowedOrigins = [
     'http://localhost:5173',
     'https://eco-report-mmg.netlify.app',
+    'https://eco-report-mmg.netlify.app/',
     'https://eco-report-client.vercel.app'
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
-        // allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes(origin + '/')) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS Not Allowed'), false);
         }
-        return callback(null, true);
     },
     credentials: true
 }));
