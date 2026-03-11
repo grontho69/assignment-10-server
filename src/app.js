@@ -22,7 +22,7 @@ app.use(limiter);
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://eco-report-client.vercel.app'],
+    origin: ['http://localhost:5173', 'https://eco-report-mmg.netlify.app', 'https://eco-report-client.vercel.app'],
     credentials: true
 }));
 app.use(express.json());

@@ -9,7 +9,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:5173', 'https://eco-report-client.vercel.app'],
+        origin: ['http://localhost:5173', 'https://eco-report-mmg.netlify.app', 'https://eco-report-client.vercel.app'],
         credentials: true
     }
 });
