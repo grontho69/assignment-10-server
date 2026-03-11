@@ -15,14 +15,27 @@ app.use(helmet()); // Sets various HTTP headers for security
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 500, // Limit each IP to 500 requests per windowMs
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use(limiter);
 
 // Middleware
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://eco-report-mmg.netlify.app',
+    'https://eco-report-client.vercel.app'
+];
+
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://eco-report-mmg.netlify.app', 'https://eco-report-client.vercel.app'],
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
+        }
+        return callback(null, true);
+    },
     credentials: true
 }));
 app.use(express.json());
