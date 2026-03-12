@@ -13,7 +13,12 @@ const getContributionsByIssueId = async (req, res) => {
 
 const createContribution = async (req, res) => {
     try {
-        const result = await contributionService.createContribution(req.body);
+        const contributionData = {
+            ...req.body,
+            contributorEmail: req.user.email,
+            contributorName: req.user.name
+        };
+        const result = await contributionService.createContribution(contributionData);
         res.status(201).json(result);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -22,10 +27,9 @@ const createContribution = async (req, res) => {
 
 const getMyContributions = async (req, res) => {
     try {
-        const email = req.query.email;
-        if (!email) return res.status(400).send({ error: "Email required" });
+        const email = req.user.email;
         const result = await contributionService.getMyContributions(email);
-        res.send(result);
+        res.json(result);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

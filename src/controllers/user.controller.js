@@ -39,9 +39,24 @@ const getProfile = async (req, res) => {
     }
 };
 
+const updateProfile = async (req, res) => {
+    try {
+        const { name, photoURL } = req.body;
+        const result = await userService.upsertUser({
+            email: req.user.email,
+            name,
+            photoURL
+        });
+        res.status(200).json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     getAllUsers,
     updateUserRole,
     deleteUser,
-    getProfile
+    getProfile,
+    updateProfile
 };

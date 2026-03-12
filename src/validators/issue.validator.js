@@ -9,6 +9,9 @@ const createIssueSchema = z.object({
         status: z.enum(['Pending', 'Approved', 'Rejected']).optional().default('Pending'),
         email: z.string().email("Invalid email address"),
         location: z.string().optional(),
+        image: z.string().url("Invalid image URL"),
+        userName: z.string().min(1, "User name is required"),
+        userPhoto: z.string().optional(),
     })
 });
 

@@ -6,6 +6,7 @@ const { verifyFirebaseToken, verifyAdmin } = require('../middleware/auth.middlew
 router.use(verifyFirebaseToken);
 
 router.get('/profile', userController.getProfile);
+router.patch('/profile', verifyFirebaseToken, userController.updateProfile);
 
 router.get('/', verifyAdmin, userController.getAllUsers);
 router.patch('/:id/role', verifyAdmin, userController.updateUserRole);

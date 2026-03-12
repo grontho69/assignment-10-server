@@ -29,7 +29,7 @@ const createIssue = async (req, res) => {
 
 const getMyIssues = async (req, res) => {
     try {
-        const result = await issueService.getMyIssues(req.query.email);
+        const result = await issueService.getMyIssues(req.user.email);
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
