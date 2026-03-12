@@ -53,10 +53,30 @@ const updateProfile = async (req, res) => {
     }
 };
 
+const makeAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await userService.makeAdmin(id);
+        res.status(200).json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getRole = async (req, res) => {
+    try {
+        res.status(200).json({ role: req.user.role });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     getAllUsers,
     updateUserRole,
     deleteUser,
     getProfile,
-    updateProfile
+    updateProfile,
+    makeAdmin,
+    getRole
 };

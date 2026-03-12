@@ -11,6 +11,7 @@ router.get('/my-issues', verifyFirebaseToken, issueController.getMyIssues);
 router.get('/:id', verifyFirebaseToken, issueController.getIssueById);
 router.post('/', verifyFirebaseToken, validate(createIssueSchema), issueController.createIssue);
 router.put('/:id', verifyFirebaseToken, verifyOrganization, validate(updateIssueSchema), issueController.updateIssue);
+router.patch('/:id/status', verifyFirebaseToken, verifyAdmin, issueController.updateIssue);
 router.delete('/:id', verifyFirebaseToken, verifyAdmin, issueController.deleteIssue);
 router.patch('/:id/approve', verifyFirebaseToken, verifyAdmin, issueController.approveIssue);
 

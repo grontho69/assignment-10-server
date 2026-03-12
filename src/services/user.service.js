@@ -11,6 +11,11 @@ const upsertUser = async (userData) => {
     const { email, name, photoURL, organization } = userData;
     const filter = { email };
     const existingUser = await getUserByEmail(email);
+    const usersCount = await getUsersCollection().countDocuments();
+    
+    // Default role for the very first user is admin, others are 'user'
+    const defaultRole = usersCount === 0 ? 'admin' : 'user';
+
     const updateDoc = {
         $set: {
             name: name || existingUser?.name,
@@ -20,7 +25,7 @@ const upsertUser = async (userData) => {
         },
         $setOnInsert: {
             email,
-            role: 'user',
+            role: defaultRole,
             createdAt: new Date()
         }
     };
@@ -52,10 +57,18 @@ const deleteUser = async (userId) => {
     return await getUsersCollection().deleteOne({ _id: new ObjectId(userId) });
 };
 
+const makeAdmin = async (userId) => {
+    return await getUsersCollection().updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { role: 'admin' } }
+    );
+};
+
 module.exports = {
     getUserByEmail,
     upsertUser,
     getAllUsers,
     updateUserRole,
-    deleteUser
+    deleteUser,
+    makeAdmin
 };
