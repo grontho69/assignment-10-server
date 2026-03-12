@@ -1,7 +1,7 @@
-const { client } = require('../config/db');
+const { getDB } = require('../config/db');
 const { ObjectId } = require('mongodb');
 
-const getUsersCollection = () => client.db('assignment-10').collection('users');
+const getUsersCollection = () => getDB().collection('users');
 
 const getUserByEmail = async (email) => {
     return await getUsersCollection().findOne({ email });
@@ -10,28 +10,31 @@ const getUserByEmail = async (email) => {
 const upsertUser = async (userData) => {
     const { email, name, photoURL, organization } = userData;
     const filter = { email };
+    
     const existingUser = await getUserByEmail(email);
     const usersCount = await getUsersCollection().countDocuments();
-    
-    // Default role for the very first user is admin, others are 'user'
-    const defaultRole = usersCount === 0 ? 'admin' : 'user';
+    const defaultRole = usersCount === 0 ? 'admin' : (existingUser?.role || 'user');
+
+    const setObj = { lastLogin: new Date() };
+    if (name) setObj.name = name;
+    if (photoURL) setObj.photoURL = photoURL;
+    if (organization) setObj.organization = organization;
 
     const updateDoc = {
-        $set: {
-            name: name || existingUser?.name,
-            photoURL: photoURL || existingUser?.photoURL,
-            organization: organization || existingUser?.organization || '',
-            lastLogin: new Date()
-        },
+        $set: setObj,
         $setOnInsert: {
             email,
             role: defaultRole,
             createdAt: new Date()
         }
     };
+    
     const options = { upsert: true, returnDocument: 'after' };
     const result = await getUsersCollection().findOneAndUpdate(filter, updateDoc, options);
-    return result;
+    
+    // In newer mongodb versions, findOneAndUpdate returns the document directly
+    // in others it returns an object with a .value property
+    return result?.value || result;
 };
 
 const getAllUsers = async (search = '') => {

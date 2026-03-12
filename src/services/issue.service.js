@@ -1,8 +1,8 @@
-const { client } = require('../config/db');
+const { getDB } = require('../config/db');
 const { ObjectId } = require('mongodb');
 const { sendNotification } = require('../utils/notification.util');
 
-const getIssuesCollection = () => client.db('assignment-10').collection('issues');
+const getIssuesCollection = () => getDB().collection('issues');
 
 const getAllIssues = async () => {
     return await getIssuesCollection().find().toArray();
@@ -13,12 +13,17 @@ const getIssueById = async (id) => {
 };
 
 const createIssue = async (data) => {
-    const result = await getIssuesCollection().insertOne(data);
+    const doc = {
+        ...data,
+        createdAt: new Date(),
+        status: data.status || 'Pending'
+    };
+    const result = await getIssuesCollection().insertOne(doc);
     sendNotification('REPORT_SUBMITTED', {
-        message: `New report submitted: ${data.title}`,
-        payload: { id: result.insertedId, title: data.title }
+        message: `New report submitted: ${doc.title}`,
+        payload: { id: result.insertedId, title: doc.title }
     });
-    return result;
+    return { _id: result.insertedId, ...doc };
 };
 
 const getMyIssues = async (email) => {
@@ -57,7 +62,7 @@ const deleteIssue = async (id) => {
 };
 
 const getRecentIssues = async (limit = 6) => {
-    return await getIssuesCollection().find().sort({ date: -1 }).limit(limit).toArray();
+    return await getIssuesCollection().find().sort({ createdAt: -1 }).limit(limit).toArray();
 };
 
 const approveIssue = async (id) => {

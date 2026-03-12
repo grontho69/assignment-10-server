@@ -3,16 +3,11 @@ require('dotenv').config();
 
 const uri = process.env.MONGODB_URI || `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.pxios99.mongodb.net/?appName=Cluster0`;
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
+const client = new MongoClient(uri);
 
 const setupIndexes = async () => {
     try {
+        await client.connect();
         const db = client.db('assignment-10');
         await db.collection('users').createIndex({ email: 1 }, { unique: true });
         console.log("Database indexes verified");
@@ -24,8 +19,7 @@ const setupIndexes = async () => {
 const connectDB = async () => {
     try {
         await client.connect();
-        console.log("Database connection established");
-        await client.db("admin").command({ ping: 1 });
+        console.log("Connected to MongoDB");
         await setupIndexes();
         return client.db('assignment-10');
     } catch (error) {
@@ -34,5 +28,7 @@ const connectDB = async () => {
     }
 };
 
-module.exports = { connectDB, client };
+const getDB = () => client.db('assignment-10');
+
+module.exports = { connectDB, client, getDB };
 

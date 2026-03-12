@@ -1,7 +1,7 @@
-const { client } = require('../config/db');
+const { getDB } = require('../config/db');
 const { ObjectId } = require('mongodb');
 
-const getContributionsCollection = () => client.db('assignment-10').collection('contributions');
+const getContributionsCollection = () => getDB().collection('contributions');
 
 const getContributionsByIssueId = async (issueId) => {
     return await getContributionsCollection()
@@ -14,6 +14,7 @@ const createContribution = async (data) => {
     const doc = {
         ...data,
         amount: Number(data.amount),
+        email: data.email || data.contributorEmail,
         createdAt: new Date()
     };
     const result = await getContributionsCollection().insertOne(doc);
@@ -21,11 +22,27 @@ const createContribution = async (data) => {
 };
 
 const getMyContributions = async (email) => {
+    // Escape special characters in email for regex
+    const escapedEmail = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const emailRegex = new RegExp(`^${escapedEmail}$`, 'i');
+
     return await getContributionsCollection().aggregate([
-        { $match: { contributorEmail: email } },
+        { $match: { $or: [{ email: emailRegex }, { contributorEmail: emailRegex }] } },
         {
             $addFields: {
-                issueObjectId: { $toObjectId: "$issueId" }
+                issueObjectId: {
+                    $cond: {
+                        if: { 
+                            $and: [
+                                { $ne: ["$issueId", null] }, 
+                                { $ne: ["$issueId", ""] },
+                                { $eq: [{ $strLenCP: { $ifNull: ["$issueId", ""] } }, 24] }
+                            ] 
+                        },
+                        then: { $toObjectId: "$issueId" },
+                        else: null
+                    }
+                }
             }
         },
         {
@@ -36,14 +53,14 @@ const getMyContributions = async (email) => {
                 as: "issueDetails"
             }
         },
-        { $unwind: "$issueDetails" },
+        { $unwind: { path: "$issueDetails", preserveNullAndEmptyArrays: true } },
         {
             $project: {
                 _id: 1,
                 amount: 1,
                 date: "$createdAt",
-                issueTitle: "$issueDetails.title",
-                category: "$issueDetails.category"
+                issueTitle: { $ifNull: ["$issueDetails.title", "Unknown Issue"] },
+                category: { $ifNull: ["$issueDetails.category", "Unknown"] }
             }
         }
     ]).toArray();

@@ -12,7 +12,8 @@ const getAllIssues = async (req, res) => {
 const getIssueById = async (req, res) => {
     try {
         const result = await issueService.getIssueById(req.params.id);
-        res.status(200).json({ success: true, result });
+        if (!result) return res.status(404).json({ message: "Issue not found" });
+        res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -21,7 +22,7 @@ const getIssueById = async (req, res) => {
 const createIssue = async (req, res) => {
     try {
         const result = await issueService.createIssue(req.body);
-        res.status(201).json({ success: true, result });
+        res.status(201).json(result);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
